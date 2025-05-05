@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pemesanan - Kedai Noka</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #0f0f0f;
+      color: white;
+    }
+    input, select, textarea {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center px-4 pt-24 pb-10">
+  <!-- Header -->
+  <header class="fixed top-0 w-full bg-black flex justify-between items-center py-4 px-6 shadow z-50">
+    <div class="flex items-center space-x-3">
+      <img src="logo.png" alt="Logo Kedai Noka" class="h-10 w-10" />
+      <h1 class="text-xl md:text-2xl font-bold text-white">Kedai Noka</h1>
+    </div>
+    <a href="index.html" class="bg-white text-black px-4 py-2 rounded font-semibold hover:bg-gray-200 transition">Kembali ke Home</a>
+  </header>
+
+  <!-- Formulir Pemesanan -->
+  <main class="w-full max-w-2xl mt-10 bg-zinc-900 p-6 rounded shadow-lg">
+    <h2 class="text-3xl font-bold text-center mb-6">Pesan Disini Ya!!</h2>
+    <form id="orderForm" class="space-y-6">
+      <input type="text" id="nama" placeholder="Nama Lengkap" required class="w-full p-3 rounded bg-gray-800 text-white" />
+      <input type="number" id="hp" placeholder="No. HP" required class="w-full p-3 rounded bg-gray-800 text-white" />
+
+      <!-- Menu Section -->
+      <div>
+        <p class="mb-2 font-semibold">Pilih Menu & Jumlah:</p>
+        <div id="menuMakanan" class="mb-6">
+          <h3 class="font-bold mb-2">Makanan</h3>
+          <div class="space-y-3" id="makananContainer"></div>
+        </div>
+        <div id="menuMinumanPanas" class="mb-6">
+          <h3 class="font-bold mb-2">Minuman Panas</h3>
+          <div class="space-y-3" id="panasContainer"></div>
+        </div>
+        <div id="menuMinumanDingin">
+          <h3 class="font-bold mb-2">Minuman Dingin</h3>
+          <div class="space-y-3" id="dinginContainer"></div>
+        </div>
+      </div>
+
+      <!-- Metode Pembayaran -->
+      <div>
+        <label for="metode" class="block font-semibold mb-2">Metode Pembayaran:</label>
+        <select id="metode" required class="w-full p-3 rounded bg-gray-800 text-white">
+          <option value="">-- Pilih --</option>
+          <option value="Transfer">Transfer</option>
+          <option value="Tunai">Tunai</option>
+        </select>
+      </div>
+
+      <!-- Catatan Pembeli -->
+      <div>
+        <label for="catatan" class="block font-semibold mb-2">Catatan (Opsional):</label>
+        <textarea id="catatan" rows="3" placeholder="Contoh: Tidak pedas, tanpa es..." class="w-full p-3 rounded bg-gray-800 text-white"></textarea>
+      </div>
+
+      <div class="font-semibold">Total Harga: <span id="totalHarga">Rp 0</span></div>
+
+      <button type="submit" class="w-full bg-white text-black font-semibold py-3 rounded hover:bg-gray-300 transition">Kirim Pesanan</button>
+    </form>
+
+    <!-- Bukti Pemesanan -->
+    <div id="bukti" class="mt-6 p-4 bg-green-600 text-white rounded hidden">
+      <h3 class="text-xl font-bold mb-2">Bukti Pemesanan</h3>
+      <div id="buktiContent"></div>
+    </div>
+  </main>
+
+  <script>
+    const menuData = {
+      makanan: {
+        "French Fries": 12000,
+        "French Fries + Sosis": 15000,
+        "Sosis Sedang": 5000,
+        "Sosis Besar": 10000,
+        "Otak-otak": 12000,
+        "Nugget": 12000,
+        "Mie Goreng No Telur": 7000,
+        "Mie Goreng + Telur": 10000,
+        "Mie Rebus No Telur": 7000,
+        "Mie Rebus + Telur": 10000,
+        "Pisang Keju Coklat": 12000
+      },
+      minumanPanas : {
+      "Green Tea Hot": 10000,
+      "Thai Tea Hot": 10000,
+      "Milk Tea Hot": 10000,
+      "Lemon Tea Hot": 10000,
+      "Kopi Susu Hot": 10000,
+      "Chocolate Hot": 8000,
+      "Kental Manis Putih Hot:": 4000,
+      "Moccacino Gooday Hot": 5000,
+      "Kopi Hitam Kapal Api Hot": 5000,
+      "Teh Tarik Hot": 4000,
+      "Chocolatos Hot": 4000,
+      "Milo Hot": 5000,
+      "Teh Manis Hot": 4000
+      },
+      minumanDingin : {
+      "Green Tea Ice": 12000,
+      "Thai Tea Ice": 12000,
+      "Milk Tea Ice": 12000,
+      "Lemon Tea Ice": 12000,
+      "Kopi Susu Ice": 12000,
+      "Chocolate Ice": 10000,
+      "Nutrisari": 5000,
+      "Gooday Freeze": 5000,
+      "Kental Manis Putih Ice": 5000,
+      "Teh Tarik Ice": 5000,
+      "Chocolatos Ice ( Coklat, Vanilla, Matcha Tulis di Catatan)": 5000,
+      "Milo Ice": 8000,
+      "Teh Manis Ice": 5000,
+      "Ekstra Joss Susu ( Josu )": 6000,
+      "Pop Ice ( Rasa Tulis Di Catatan)": 4000
+      }
+    };
+
+    const jumlahPesanan = {};
+    const totalHargaSpan = document.getElementById('totalHarga');
+
+    function buatMenu(containerId, daftarMenu) {
+      const container = document.getElementById(containerId);
+      for (let menu in daftarMenu) {
+        jumlahPesanan[menu] = 0;
+        const div = document.createElement('div');
+        div.classList.add('flex', 'justify-between', 'items-center', 'gap-4');
+        div.innerHTML = `
+          <label class="flex items-center space-x-2 w-full">
+            <input type="checkbox" name="menu" value="${menu}" onchange="hitungTotal()"/>
+            <span class="w-40">${menu} - Rp ${daftarMenu[menu].toLocaleString()}</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="ubahJumlah('${menu}', -1)" class="bg-gray-700 text-white px-2 rounded">−</button>
+            <span id="qty-${menu}" class="w-6 text-center">0</span>
+            <button type="button" onclick="ubahJumlah('${menu}', 1)" class="bg-gray-700 text-white px-2 rounded">+</button>
+          </div>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    buatMenu("makananContainer", menuData.makanan);
+    buatMenu("panasContainer", menuData.minumanPanas);
+    buatMenu("dinginContainer", menuData.minumanDingin);
+
+    function ubahJumlah(menu, delta) {
+      jumlahPesanan[menu] = (jumlahPesanan[menu] || 0) + delta;
+      if (jumlahPesanan[menu] < 0) jumlahPesanan[menu] = 0;
+      document.getElementById(`qty-${menu}`).textContent = jumlahPesanan[menu];
+      hitungTotal();
+    }
+
+    function hitungTotal() {
+      let total = 0;
+      const allMenus = {...menuData.makanan, ...menuData.minumanPanas, ...menuData.minumanDingin};
+      for (let menu in allMenus) {
+        const checkbox = document.querySelector(`input[name="menu"][value="${menu}"]`);
+        const qty = jumlahPesanan[menu] || 0;
+        if (checkbox.checked && qty > 0) {
+          total += allMenus[menu] * qty;
+        }
+      }
+      totalHargaSpan.textContent = `Rp ${total.toLocaleString()}`;
+    }
+
+    const form = document.getElementById('orderForm');
+    const bukti = document.getElementById('bukti');
+    const buktiContent = document.getElementById('buktiContent');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const nama = document.getElementById('nama').value.trim();
+      const hp = document.getElementById('hp').value.trim();
+      const metode = document.getElementById('metode').value;
+      const catatan = document.getElementById('catatan').value.trim();
+      const checkedMenus = Array.from(form.querySelectorAll('input[name="menu"]:checked'));
+
+      if (checkedMenus.length === 0) {
+        alert("Pilih setidaknya satu menu.");
+        return;
+      }
+
+      let total = 0;
+      const pesanan = [];
+
+      for (const item of checkedMenus) {
+        const menu = item.value;
+        const qty = jumlahPesanan[menu] || 0;
+        const harga = menuData.makanan[menu] || menuData.minumanPanas[menu] || menuData.minumanDingin[menu];
+        if (qty < 1) {
+          alert(`Jumlah untuk menu "${menu}" belum diisi dengan benar.`);
+          return;
+        }
+        total += harga * qty;
+        pesanan.push(`${menu} (${qty}) - Rp ${harga * qty}`);
+      }
+
+      bukti.classList.remove('hidden');
+      buktiContent.innerHTML = `
+        <p><strong>Nama:</strong> ${nama}</p>
+        <p><strong>No. HP:</strong> ${hp}</p>
+        <p><strong>Pembayaran:</strong> ${metode}</p>
+        <p><strong>Pesanan:</strong><br>${pesanan.join('<br>')}</p>
+        ${catatan ? `<p><strong>Catatan:</strong> ${catatan}</p>` : ''}
+        <p><strong>Total:</strong> Rp ${total.toLocaleString()}</p>
+      `;
+
+      const waPesan = `Halo, saya ${nama} (${hp}) ingin memesan:\n- ${pesanan.join('\n- ')}${catatan ? `\nCatatan: ${catatan}` : ''}\nMetode Pembayaran: ${metode}\nTotal: Rp ${total.toLocaleString()}`;
+      window.open(`https://wa.me/6287777427986?text=${encodeURIComponent(waPesan)}`, '_blank');
+    });
+  </script>
+</body>
+</html>
