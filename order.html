@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pemesanan - Kedai Noka</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #0f0f0f;
+      color: white;
+    }
+    input, select, textarea {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center px-4 pt-24 pb-10">
+  <!-- Header -->
+  <header class="fixed top-0 w-full bg-black flex justify-between items-center py-4 px-6 shadow z-50">
+    <div class="flex items-center space-x-3">
+      <img src="logo.png" alt="Logo Kedai Noka" class="h-10 w-10" />
+      <h1 class="text-xl md:text-2xl font-bold text-white">Kedai Noka</h1>
+    </div>
+    <a href="index.html" class="bg-white text-black px-4 py-2 rounded font-semibold hover:bg-gray-200 transition">Kembali ke Home</a>
+  </header>
+
+  <!-- Formulir Pemesanan -->
+  <main class="w-full max-w-2xl mt-10 bg-zinc-900 p-6 rounded shadow-lg">
+    <h2 class="text-3xl font-bold text-center mb-6">Pesan Disini Ya!!</h2>
+    <form id="orderForm" class="space-y-4">
+      <input type="text" id="nama" placeholder="Nama Lengkap" required class="w-full p-3 rounded bg-gray-800 text-white" />
+      <input type="number" id="hp" placeholder="No. HP" required class="w-full p-3 rounded bg-gray-800 text-white" />
+
+      <!-- Menu List -->
+      <div>
+        <p class="mb-2 font-semibold">Pilih Menu & Jumlah:</p>
+        <div id="menuContainer" class="space-y-3"></div>
+      </div>
+
+      <!-- Metode Pembayaran -->
+      <div>
+        <label for="metode" class="block font-semibold mb-2">Metode Pembayaran:</label>
+        <select id="metode" required class="w-full p-3 rounded bg-gray-800 text-white">
+          <option value="">-- Pilih --</option>
+          <option value="Transfer">Transfer</option>
+          <option value="Tunai">Tunai</option>
+        </select>
+      </div>
+
+      <div class="font-semibold">Total Harga: <span id="totalHarga">Rp 0</span></div>
+
+      <button type="submit" class="w-full bg-white text-black font-semibold py-3 rounded hover:bg-gray-300 transition">Kirim Pesanan</button>
+    </form>
+
+    <!-- Bukti Pemesanan -->
+    <div id="bukti" class="mt-6 p-4 bg-green-600 text-white rounded hidden">
+      <h3 class="text-xl font-bold mb-2">Bukti Pemesanan</h3>
+      <div id="buktiContent"></div>
+    </div>
+  </main>
+
+  <script>
+    const hargaMenu = {
+      "Espresso": 20000,
+      "Latte": 25000,
+      "Cappuccino": 23000,
+      "Americano": 18000,
+      "Mocha": 26000,
+      "Matcha Latte": 27000,
+      "Coklat Panas": 22000,
+      "Teh Tarik": 17000
+    };
+
+    const menuContainer = document.getElementById('menuContainer');
+    const totalHargaSpan = document.getElementById('totalHarga');
+
+    // Tampilkan menu
+    for (let menu in hargaMenu) {
+      const div = document.createElement('div');
+      div.classList.add('flex', 'justify-between', 'items-center');
+      div.innerHTML = `
+        <label class="flex items-center space-x-2">
+          <input type="checkbox" name="menu" value="${menu}" onchange="hitungTotal()"/>
+          <span>${menu} - Rp ${hargaMenu[menu].toLocaleString()}</span>
+        </label>
+        <input type="number" id="qty-${menu}" min="0" value="0" class="w-16 p-1 rounded bg-gray-700 text-white" oninput="hitungTotal()" />
+      `;
+      menuContainer.appendChild(div);
+    }
+
+    function hitungTotal() {
+      let total = 0;
+      for (let menu in hargaMenu) {
+        const checkbox = document.querySelector(`input[name="menu"][value="${menu}"]`);
+        const qty = parseInt(document.getElementById(`qty-${menu}`).value) || 0;
+        if (checkbox.checked && qty > 0) {
+          total += hargaMenu[menu] * qty;
+        }
+      }
+      totalHargaSpan.textContent = `Rp ${total.toLocaleString()}`;
+    }
+
+    const form = document.getElementById('orderForm');
+    const bukti = document.getElementById('bukti');
+    const buktiContent = document.getElementById('buktiContent');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const nama = document.getElementById('nama').value.trim();
+      const hp = document.getElementById('hp').value.trim();
+      const metode = document.getElementById('metode').value;
+      const checkedMenus = Array.from(form.querySelectorAll('input[name="menu"]:checked'));
+
+      if (checkedMenus.length === 0) {
+        alert("Pilih setidaknya satu menu.");
+        return;
+      }
+
+      let total = 0;
+      const pesanan = [];
+
+      for (const item of checkedMenus) {
+        const menu = item.value;
+        const qty = parseInt(document.getElementById(`qty-${menu}`).value);
+        if (!qty || qty < 1) {
+          alert(`Jumlah untuk menu "${menu}" belum diisi dengan benar.`);
+          return;
+        }
+        total += hargaMenu[menu] * qty;
+        pesanan.push(`${menu} (${qty}) - Rp ${hargaMenu[menu] * qty}`);
+      }
+
+      bukti.classList.remove('hidden');
+      buktiContent.innerHTML = `
+        <p><strong>Nama:</strong> ${nama}</p>
+        <p><strong>No. HP:</strong> ${hp}</p>
+        <p><strong>Pembayaran:</strong> ${metode}</p>
+        <p><strong>Pesanan:</strong><br>${pesanan.join('<br>')}</p>
+        <p><strong>Total:</strong> Rp ${total.toLocaleString()}</p>
+      `;
+
+      const waPesan = `Halo, saya ${nama} (${hp}) ingin memesan:\n- ${pesanan.join('\n- ')}\nMetode Pembayaran: ${metode}\nTotal: Rp ${total.toLocaleString()}`;
+      window.open(`https://wa.me/6287777427986?text=${encodeURIComponent(waPesan)}`, '_blank');
+    });
+  </script>
+</body>
+</html>
