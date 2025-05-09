@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form Pemesanan Kedai Noka</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo {
+      display: block;
+      margin: 0 auto 10px;
+      max-width: 150px;
+    }
+    .back-home {
+      display: inline-block;
+      margin-bottom: 15px;
+      color: #000;
+      font-weight: bold;
+      font-size: 16px;
+      text-decoration: none;
+      background-color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 2px solid #ccc;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(255, 255, 255, 0.2);
+    }
+    .back-home:hover {
+      background-color: #f2f2f2;
+      transform: scale(1.03);
+      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.3);
+    }
+    h1 { margin: 0; }
+    h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 5px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      background-color: #111;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 6px;
+    }
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 12px;
+      background-color: #111;
+      border: 1px solid #444;
+      border-radius: 8px;
+    }
+    .menu-name {
+      flex: 1;
+      font-size: 14px;
+    }
+    .menu-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .menu-controls button {
+      background-color: #fff;
+      color: #000;
+      border: none;
+      padding: 6px 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .menu-controls button:hover {
+      background-color: #ccc;
+    }
+    .menu-controls span {
+      min-width: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+    button[type="submit"] {
+      margin-top: 25px;
+      padding: 12px 20px;
+      background-color: white;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+      width: 100%;
+    }
+    button[type="submit"]:hover {
+      background-color: #ccc;
+    }
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 16px;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 16px;
+    }
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    @keyframes fadein {
+      from {bottom: 0; opacity: 0;} 
+      to {bottom: 30px; opacity: 1;}
+    }
+    @keyframes fadeout {
+      from {bottom: 30px; opacity: 1;} 
+      to {bottom: 0; opacity: 0;}
+    }
+    @media (max-width: 600px) {
+      .menu-item { flex-direction: column; align-items: flex-start; }
+      .menu-controls { margin-top: 10px; }
+      .back-home { display: block; width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="index.html" class="back-home">← Kembali ke Home</a>
+    <img src="logo.png" alt="Logo Kedai Noka" class="logo">
+    <h1>Pemesanan Kedai Noka</h1>
+  </div>
+
+  <form id="form-pesanan">
+    <label>Nama</label>
+    <input type="text" id="nama" required />
+    <label>No HP</label>
+    <input type="text" id="no_hp" required />
+    <label>Pilih Menu dan Jumlah</label>
+    <div id="daftar-menu">
+      <h3>Makanan</h3><div id="menu-makanan"></div>
+      <h3>Minuman</h3><div id="menu-minuman"></div>
+    </div>
+    <label>Total Harga</label>
+    <input type="number" id="harga" readonly />
+    <label>Metode Pembayaran</label>
+    <select id="metode_pembayaran" required>
+      <option value="" disabled selected>Pilih metode</option>
+      <option value="Tunai">Tunai (Bayar di tempat)</option>
+      <option value="Dana">Dana (082317235183 a.n Matthew Marcellius)</option>
+      <option value="Gopay">Gopay (089503657396 a.n D.S)</option>
+    </select>
+    <label>Catatan</label>
+    <textarea id="catatan" rows="2"></textarea>
+    <label>Upload Bukti Transfer (jika bayar non-tunai)</label>
+    <input type="file" id="bukti_transfer" accept="image/*" />
+    <button type="submit">Kirim Pesanan</button>
+  </form>
+
+  <div id="toast"></div>
+  
+  <section style="margin-top: 40px;">
+  <h2>Cek Status Pesanan</h2>
+  <input type="text" id="cek-nomor" placeholder="Masukkan nomor HP Anda" style="padding: 8px; width: 80%;">
+  <button onclick="cekStatusPesanan()" style="padding: 8px;">Cek Status</button>
+  <div id="hasil-status" style="margin-top: 15px; background-color: #111; padding: 15px; border-radius: 8px; border: 1px solid #555; color: white;"></div>
+</section>
+
+  <script>
+    const hargaMap = {
+      "French Fries": 12000, "French Fries + Sosis": 15000, "Sosis Sedang": 5000, "Sosis Besar": 10000,
+      "Otak-otak": 12000, "Nugget": 12000, "Mie Goreng No Telur": 7000, "Mie Goreng + Telur": 10000,
+      "Mie Rebus No Telur": 7000, "Mie Rebus + Telur": 10000, "Pisang Keju Coklat": 12000,
+      "Green Tea Hot": 10000, "Thai Tea Hot": 10000, "Milk Tea Hot": 10000, "Lemon Tea Hot": 10000,
+      "Kopi Susu Hot": 10000, "Chocolate Hot": 8000, "Kental Manis Putih Hot": 4000, "Moccacino Gooday Hot": 5000,
+      "Kopi Hitam Kapal Api Hot": 5000, "Teh Tarik Hot": 4000, "Chocolatos Hot": 4000, "Milo Hot": 5000,
+      "Teh Manis Hot": 4000, "Green Tea Ice": 12000, "Thai Tea Ice": 12000, "Milk Tea Ice": 12000,
+      "Lemon Tea Ice": 12000, "Kopi Susu Ice": 12000, "Chocolate Ice": 10000, "Nutrisari": 5000,
+      "Gooday Freeze": 5000, "Kental Manis Putih Ice": 5000, "Teh Tarik Ice": 5000, "Chocolatos Ice": 5000,
+      "Milo Ice": 8000, "Teh Manis Ice": 5000, "Ekstra Joss Susu": 6000, "Pop Ice": 4000
+    };
+
+    const makananList = ["French Fries", "French Fries + Sosis", "Sosis Sedang", "Sosis Besar", "Otak-otak", "Nugget", "Mie Goreng No Telur", "Mie Goreng + Telur", "Mie Rebus No Telur", "Mie Rebus + Telur", "Pisang Keju Coklat"];
+    const minumanList = Object.keys(hargaMap).filter(item => !makananList.includes(item));
+    const pesanan = {};
+    const hargaTotal = document.getElementById("harga");
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.className = "show";
+      setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
+    }
+
+    function updateHarga() {
+      let total = 0;
+      for (const [menu, qty] of Object.entries(pesanan)) {
+        total += hargaMap[menu] * qty;
+      }
+      hargaTotal.value = total;
+    }
+
+    function createMenuItem(menu, container) {
+      pesanan[menu] = 0;
+      const div = document.createElement("div");
+      div.className = "menu-item";
+      div.innerHTML = `
+        <div class="menu-name">${menu} - Rp${hargaMap[menu]}</div>
+        <div class="menu-controls">
+          <button type="button" onclick="ubahJumlah('${menu}', -1)">−</button>
+          <span id="qty-${menu.replace(/\s/g, '')}">0</span>
+          <button type="button" onclick="ubahJumlah('${menu}', 1)">+</button>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function ubahJumlah(menu, delta) {
+      pesanan[menu] = Math.max(0, pesanan[menu] + delta);
+      document.getElementById(`qty-${menu.replace(/\s/g, '')}`).innerText = pesanan[menu];
+      updateHarga();
+    }
+
+    window.ubahJumlah = ubahJumlah;
+    makananList.forEach(menu => createMenuItem(menu, document.getElementById("menu-makanan")));
+    minumanList.forEach(menu => createMenuItem(menu, document.getElementById("menu-minuman")));
+    
+  function getTanggalWIB() {
+  return new Date().toLocaleString("id-ID", {
+    timeZone: "Asia/Jakarta",
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+    document.getElementById("form-pesanan").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const nama = document.getElementById("nama").value;
+      const no_hp = document.getElementById("no_hp").value;
+      const metode = document.getElementById("metode_pembayaran").value;
+      const catatan = document.getElementById("catatan").value;
+      const total = parseInt(hargaTotal.value);
+      const file = document.getElementById("bukti_transfer").files[0];
+
+      const rincian_pesanan = Object.entries(pesanan)
+        .filter(([_, qty]) => qty > 0)
+        .map(([menu, qty]) => `${menu} x${qty}`)
+        .join(", ");
+
+      if (!rincian_pesanan) return showToast("Pilih minimal 1 menu.");
+      if (metode !== "Tunai" && !file) return showToast("Upload bukti transfer diperlukan.");
+
+      let bukti_url = "";
+
+      if (metode !== "Tunai" && file) {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+        const uploadRes = await fetch(`https://nzhhrovqnbayfbkaalss.supabase.co/storage/v1/object/bukti/${filePath}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type,
+            "x-upsert": "true",
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56aGhyb3ZxbmJheWZia2FhbHNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NTIyNDksImV4cCI6MjA2MjAyODI0OX0.koIvptV1BYsbcTqNdT7mZwK-BENpuijlidZax8XhTxs",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56aGhyb3ZxbmJheWZia2FhbHNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NTIyNDksImV4cCI6MjA2MjAyODI0OX0.koIvptV1BYsbcTqNdT7mZwK-BENpuijlidZax8XhTxs"
+          },
+          body: file
+        });
+        if (!uploadRes.ok) return showToast("Upload bukti gagal.");
+        bukti_url = `https://nzhhrovqnbayfbkaalss.supabase.co/storage/v1/object/public/bukti/${filePath}`;
+      }
+
+      const res = await fetch("https://nzhhrovqnbayfbkaalss.supabase.co/rest/v1/pesanan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56aGhyb3ZxbmJheWZia2FhbHNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NTIyNDksImV4cCI6MjA2MjAyODI0OX0.koIvptV1BYsbcTqNdT7mZwK-BENpuijlidZax8XhTxs",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56aGhyb3ZxbmJheWZia2FhbHNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NTIyNDksImV4cCI6MjA2MjAyODI0OX0.koIvptV1BYsbcTqNdT7mZwK-BENpuijlidZax8XhTxs"
+        },
+        body: JSON.stringify({
+  nama, no_hp, metode_pembayaran: metode, catatan, total, rincian_pesanan, bukti_url, status: "menunggu", tanggal: getTanggalWIB()
+})
+      });
+
+      if (res.ok) {
+        showToast("Pesanan berhasil dikirim!");
+        this.reset();
+        setTimeout(() => window.location.href = "index.html", 3000);
+      } else {
+        showToast("Gagal mengirim pesanan.");
+      }
+    });
+  </script>
+  
+  <script>
+  const SUPABASE_URL = "https://nzhhrovqnbayfbkaalss.supabase.co";
+  const SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56aGhyb3ZxbmJheWZia2FhbHNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NTIyNDksImV4cCI6MjA2MjAyODI0OX0.koIvptV1BYsbcTqNdT7mZwK-BENpuijlidZax8XhTxs";
+
+  async function cekStatusPesanan() {
+    const nomor = document.getElementById("cek-nomor").value.trim();
+    const hasil = document.getElementById("hasil-status");
+
+    if (!nomor) {
+      hasil.innerHTML = "Silakan masukkan nomor HP Anda.";
+      return;
+    }
+
+    hasil.innerHTML = "Memuat data pesanan...";
+
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/pesanan?no_hp=eq.${nomor}&order=id.desc&limit=1`, {
+        headers: {
+          apikey: SUPABASE_API_KEY,
+          Authorization: "Bearer " + SUPABASE_API_KEY
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.length > 0) {
+        const pesanan = data[0];
+        hasil.innerHTML = `
+          <p><strong>Nama:</strong> ${pesanan.nama}</p>
+          <p><strong>Pesanan:</strong> ${pesanan.rincian_pesanan}</p>
+          <p><strong>Status:</strong> <span style="color: blue;">${pesanan.status}</span></p>
+          <p><strong>Tanggal:</strong> ${pesanan.tanggal}</p>
+        `;
+      } else {
+        hasil.innerHTML = "Pesanan tidak ditemukan untuk nomor tersebut.";
+      }
+    } catch (error) {
+      console.error(error);
+      hasil.innerHTML = "Terjadi kesalahan saat mengambil data.";
+    }
+  }
+</script>
+</body>
+</html>
