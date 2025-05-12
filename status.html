@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Status Pesanan | Kedai Noka</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      background-color: #111;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #444;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .status {
+      font-weight: bold;
+      color: #00f;
+    }
+    .back-home {
+      margin-top: 20px;
+      display: inline-block;
+      padding: 10px 20px;
+      background: #fff;
+      color: #000;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .back-home:hover {
+      background: #ccc;
+    }
+    .last-updated {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Status Pesanan Anda</h1>
+    <div id="info-pesanan">Memuat data...</div>
+    <div class="last-updated" id="last-update"></div>
+    <a href="index.html" class="back-home">← Kembali ke Home</a>
+  </div>
+
+  <!-- Suara ting -->
+  <audio id="notifikasi" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_d11dd3c1b4.mp3" preload="auto"></audio>
+
+  <script>
+    const SUPABASE_URL = "https://nzhhrovqnbayfbkaalss.supabase.co";
+    const SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56aGhyb3ZxbmJheWZia2FhbHNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NTIyNDksImV4cCI6MjA2MjAyODI0OX0.koIvptV1BYsbcTqNdT7mZwK-BENpuijlidZax8XhTxs";
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const infoDiv = document.getElementById("info-pesanan");
+    const updateTime = document.getElementById("last-update");
+    const audio = document.getElementById("notifikasi");
+    let statusSebelumnya = null;
+
+    async function loadStatus() {
+      if (!id) {
+        infoDiv.textContent = "ID pesanan tidak ditemukan di URL.";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/pesanan?id=eq.${id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_API_KEY,
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56aGhyb3ZxbmJheWZia2FhbHNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NTIyNDksImV4cCI6MjA2MjAyODI0OX0.koIvptV1BYsbcTqNdT7mZwK-BENpuijlidZax8XhTxs"
+          }
+        });
+
+        const data = await res.json();
+        if (data.length > 0) {
+          const p = data[0];
+
+          // Mainkan suara jika status berubah
+          if (statusSebelumnya && p.status !== statusSebelumnya) {
+            audio.play();
+          }
+
+          statusSebelumnya = p.status;
+
+          infoDiv.innerHTML = `
+            <p><strong>Nama:</strong> ${p.nama}</p>
+            <p><strong>No HP:</strong> ${p.no_hp}</p>
+            <p><strong>Pesanan:</strong> ${p.rincian_pesanan}</p>
+            <p><strong>Total:</strong> Rp${p.total}</p>
+            <p><strong>Pembayaran:</strong> ${p.metode_pembayaran}</p>
+            <p><strong>Status:</strong> <span class="status">${p.status}</span></p>
+            <p><strong>Tanggal:</strong> ${p.tanggal}</p>
+          `;
+          updateTime.textContent = "Terakhir diperbarui: " + new Date().toLocaleTimeString("id-ID");
+        } else {
+          infoDiv.textContent = "Pesanan tidak ditemukan.";
+        }
+      } catch (err) {
+        console.error(err);
+        infoDiv.textContent = "Terjadi kesalahan saat memuat data.";
+      }
+    }
+
+    loadStatus();
+    setInterval(loadStatus, 10000); // update otomatis tiap 10 detik
+  </script>
+</body>
+</html>
