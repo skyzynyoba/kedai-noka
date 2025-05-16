@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Testimoni - Kedai Noka</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+    }
+
+    nav {
+      background-color: #111;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      background: #fff;
+      height: 3px;
+      margin: 4px 0;
+      width: 25px;
+      border-radius: 2px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 15px;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+
+    .nav-links a:hover {
+      background: #333;
+    }
+
+    @media (max-width: 600px) {
+      .menu-toggle {
+        display: flex;
+      }
+
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: #111;
+        margin-top: 10px;
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      margin-bottom: 30px;
+    }
+
+    input, textarea, button, select {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    input, textarea, select {
+      background: #111;
+      color: #fff;
+    }
+
+    button {
+      background: #fff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .rating label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .testimoni {
+      background: #111;
+      border-left: 5px solid #fff;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s forwards;
+    }
+
+    .testimoni strong {
+      font-size: 1.1rem;
+    }
+
+    .testimoni img {
+      max-width: 200px;
+      max-height: 150px;
+      margin-top: 10px;
+      border-radius: 5px;
+      display: block;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">Kedai Noka</div>
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="nav-links" id="nav-links">
+      <a href="/">Home</a>
+      <a href="/pesan.html">Pesan</a>
+      <a href="/about.html">About</a>
+      <a href="/support.html">Support</a>
+      <a href="/testimoni.html">Testimoni</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Testimoni Pengunjung</h1>
+    <form id="form-testimoni">
+      <input type="text" id="name" placeholder="Nama Anda" required />
+      <textarea id="pesan" placeholder="Tulis testimoni..." required></textarea>
+      <div class="rating">
+        <label for="rating">Rating:</label>
+        <select id="rating" required>
+          <option value="">Pilih rating</option>
+          <option value="1">★☆☆☆☆</option>
+          <option value="2">★★☆☆☆</option>
+          <option value="3">★★★☆☆</option>
+          <option value="4">★★★★☆</option>
+          <option value="5">★★★★★</option>
+        </select>
+      </div>
+      <input type="file" id="foto" accept="image/*" />
+      <button type="submit">Kirim</button>
+    </form>
+    <div id="list-testimoni"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+      'https://nzhhrovqnbayfbkaalss.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56aGhyb3ZxbmJheWZia2FhbHNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NTIyNDksImV4cCI6MjA2MjAyODI0OX0.koIvptV1BYsbcTqNdT7mZwK-BENpuijlidZax8XhTxs'
+    );
+
+    const form = document.getElementById('form-testimoni');
+    const list = document.getElementById('list-testimoni');
+
+    async function loadTestimoni() {
+      const { data, error } = await supabase
+        .from('testimoni')
+        .select('*')
+        .order('id', { ascending: false });
+
+      if (error) {
+        console.error(error);
+        list.innerHTML = '<p>Gagal memuat testimoni.</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      data.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'testimoni';
+        div.style.animationDelay = `${index * 0.1}s`;
+        div.innerHTML = `
+          <strong>${item.name}</strong>
+          <p>${item.pesan}</p>
+          ${item.rating ? `<p>Rating: ${'★'.repeat(item.rating)}${'☆'.repeat(5 - item.rating)}</p>` : ''}
+          ${item.foto_url ? `<img src="${item.foto_url}" alt="Foto Testimoni" />` : ''}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const pesan = document.getElementById('pesan').value.trim();
+      const rating = document.getElementById('rating').value;
+      const file = document.getElementById('foto').files[0];
+
+      if (!name || !pesan || !rating) return;
+
+      let foto_url = null;
+
+      if (file) {
+        const { data, error: uploadError } = await supabase.storage
+          .from('testimoni')
+          .upload(`foto-${Date.now()}`, file);
+
+        if (uploadError) {
+          alert('Gagal mengunggah foto');
+          console.error(uploadError);
+          return;
+        }
+
+        const { data: publicUrl } = supabase.storage
+          .from('testimoni')
+          .getPublicUrl(data.path);
+
+        foto_url = publicUrl.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('testimoni')
+        .insert([{ name, pesan, foto_url, rating }]);
+
+      if (error) {
+        alert('Gagal mengirim testimoni');
+        console.error(error);
+      } else {
+        form.reset();
+        loadTestimoni();
+      }
+    });
+
+    loadTestimoni();
+  </script>
+
+  <script>
+    const toggle = document.getElementById('menu-toggle');
+    const navLinks = document.getElementById('nav-links');
+    toggle.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+  </script>
+
+</body>
+</html>
